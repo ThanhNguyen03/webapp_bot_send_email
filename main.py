@@ -189,7 +189,7 @@ file_button = tk.Button(file_frame, text="Chọn tệp", command=select_files)
 file_button.pack(side="left", padx=10, pady=5)
 
 # create the timeloop frame
-timeloop_frame = tk.LabelFrame(main_frame, text="Tự động gửi vào lúc:")
+timeloop_frame = tk.LabelFrame(main_frame, text="Tự động gửi vào lúc (00:00):")
 timeloop_frame.pack(fill="x", padx=10, pady=10)
 
 timeloop_entry = tk.Entry(timeloop_frame, width=40)
