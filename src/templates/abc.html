@@ -64,8 +64,9 @@
         </div>
         <div class="frame">
             <label>File đính kèm</label>
-            <input type="text" id="file_entry" placeholder="Enter file path">
-            <button id="file_button">Chọn tệp</button>
+            <input type="file" id="file_input" style="display: none;" onchange="displayFileName()">
+            <input type="text" id="file_entry" placeholder="Enter file path" readonly>
+            <button id="file_button" onclick="document.getElementById('file_input').click(); return false;">Chọn tệp</button>
         </div>
         <div class="frame">
             <label>Tự động gửi vào lúc:</label>
@@ -73,7 +74,7 @@
         </div>
         <div class="frame">
             <label>Status</label>
-            <p id="status_label"></p>
+            <p id="status_label">{{ status_message }}</p>
         </div>
         <button id="save_button">Lưu thông tin</button>
         <button id="send_button">Bắt đầu hẹn giờ</button>
@@ -84,8 +85,87 @@
         </div>
     </div>
     <script>
-        // You can add your JavaScript functionality here
-        // For example, handling button clicks and form submissions
+        document.getElementById("save_button").addEventListener("click", function(event) {
+            event.preventDefault(); // Ngăn chặn form tự động gửi dữ liệu
+
+            // Lấy giá trị từ các trường nhập liệu
+            var email = document.getElementById("email_entry").value;
+            var password = document.getElementById("password_entry").value;
+            var sheetLink = document.getElementById("sheet_link_entry").value;
+            var timeloop = document.getElementById("timeloop_entry").value;
+
+            // Kiểm tra và xử lý tệp đã tải lên (nếu cần)
+
+            // Tạo một đối tượng FormData để gửi dữ liệu
+            var formData = new FormData();
+            formData.append("email", email);
+            formData.append("password", password);
+            formData.append("sheet_link", sheetLink);
+            formData.append("timeloop", timeloop);
+
+            // Gửi dữ liệu lên máy chủ bằng cách sử dụng XMLHttpRequest hoặc Fetch API
+            fetch("/save", {
+                method: "POST",
+                body: formData
+            })
+            .then(function(response) {
+                if (response.ok) {
+                    // Xử lý khi dữ liệu đã được lưu thành công
+                    console.log("Dữ liệu đã được lưu thành công.");
+                } else {
+                    // Xử lý khi có lỗi xảy ra
+                    console.error("Lỗi khi gửi dữ liệu lên máy chủ.");
+                }
+            })
+            .catch(function(error) {
+                console.error("Lỗi khi gửi dữ liệu: " + error);
+            });
+        });
+
+        // Xử lý khi tệp đã được chọn
+        document.getElementById('file_input').addEventListener('change', function() {
+            var fileInput = document.getElementById('file_input');
+            var fileEntry = document.getElementById('file_entry');
+
+            if (fileInput.files.length > 0) {
+                // Lấy tên của tệp tin và hiển thị nó trong trường nhập liệu
+                var fileName = fileInput.files[0].name;
+                fileEntry.value = fileName;
+            }
+        });
+
+        
+        function showStatusMessage(message, color) {
+            var statusLabel = document.getElementById("status_label");
+            statusLabel.style.color = color;
+            statusLabel.innerHTML = message;
+        }
+        function updateStatus() {
+            // Gửi AJAX request đến route của Flask để cập nhật trạng thái
+            $.ajax({
+                url: '/update_status',
+                type: 'POST',
+                success: function(response) {
+                    // Cập nhật thông báo trạng thái trên giao diện
+                    $('#status_label').text(response.status_message);
+                },
+                error: function(error) {
+                    console.error(error);
+                }
+            });
+        }
+        document.getElementById('start_button').addEventListener('click', function() {
+            $.post('/start_schedule', { timeloop: $('#timeloop_entry').val() }, function(data) {
+                alert(data);
+            });
+        });
+
+        document.getElementById('stop_button').addEventListener('click', function() {
+            $.post('/stop_schedule', function(data) {
+                alert(data);
+            });
+        });
+
     </script>
 </body>
 </html>
